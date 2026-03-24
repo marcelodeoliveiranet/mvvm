@@ -5,13 +5,10 @@ class DioFactory {
   static Dio createDio(AuthStored storage) {
     final dio = Dio(
       BaseOptions(
-        baseUrl: "http://192.168.15.89:5229/api/",
-        connectTimeout: const Duration(seconds: 8),
-        receiveTimeout: const Duration(seconds: 8),
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
+        baseUrl: "http://192.168.15.22:51137/api/",
+        connectTimeout: const Duration(seconds: 18),
+        receiveTimeout: const Duration(seconds: 18),
+        headers: {"Content-Type": "application/json", "Accept": "*/*"},
       ),
     );
 

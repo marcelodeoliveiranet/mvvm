@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mvvm/config/dependencies.dart';
+import 'package:mvvm/ui/user/widgets/user_list_page.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.dark,
+      home: const UserListPage(),
     );
   }
 }

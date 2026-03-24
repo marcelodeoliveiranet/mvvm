@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:mvvm/core/exceptions/app_exception.dart';
 import 'package:mvvm/domain/models/user/user.dart';
 
 class UserService {
@@ -14,7 +15,7 @@ class UserService {
       final List data = response.data;
       return data.map((json) => User.fromJson(json)).toList();
     } on DioException catch (e) {
-      throw _handlerError(e, "Erro ao buscar os usuários");
+      throw _handlerError(e);
     }
   }
 
@@ -23,7 +24,7 @@ class UserService {
       final response = await _dio.get("$endPoint/$id");
       return User.fromJson(response.data);
     } on DioException catch (e) {
-      throw _handlerError(e, "Erro ao buscar o usuário");
+      throw _handlerError(e);
     }
   }
 
@@ -33,7 +34,7 @@ class UserService {
 
       return User.fromJson(response.data);
     } on DioException catch (e) {
-      throw _handlerError(e, "Erro ao criar o usuário");
+      throw _handlerError(e);
     }
   }
 
@@ -43,7 +44,7 @@ class UserService {
 
       return User.fromJson(response.data);
     } on DioException catch (e) {
-      throw _handlerError(e, "Erro ao alterar o usuário");
+      throw _handlerError(e);
     }
   }
 
@@ -51,23 +52,27 @@ class UserService {
     try {
       await _dio.delete("$endPoint/$id");
     } on DioException catch (e) {
-      throw _handlerError(e, "Erro ao excluir o usuário");
+      throw _handlerError(e);
     }
   }
 
-  Exception _handlerError(DioException e, String message) {
+  Exception _handlerError(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
-        return Exception("$message: Timeout de conexão");
+        return AppException(
+          message: "Erro de timeout com o servidor: ${e.message}",
+        );
 
       case DioExceptionType.receiveTimeout:
-        return Exception("$message: Timeout de resposta");
+        return AppException(message: "Erro de receivetimeour: ${e.message}");
 
       case DioExceptionType.connectionError:
-        return Exception("$message: Erro de conexão com o servidor");
+        return AppException(
+          message: "Erro de conexão com o servidor: ${e.message}",
+        );
 
       default:
-        return Exception("$message: ${e.response?.data}");
+        return AppException(message: "Erro critico: ${e.message}");
     }
   }
 }

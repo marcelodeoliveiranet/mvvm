@@ -1,3 +1,4 @@
+import 'package:mvvm/core/exceptions/app_exception.dart';
 import 'package:mvvm/data/repositories/user/user_repository.dart';
 import 'package:mvvm/data/services/user/user_service.dart';
 import 'package:mvvm/domain/models/user/user.dart';
@@ -14,7 +15,7 @@ class UserRepositoryImplRemote implements UserRepository {
       final user = await _service.getAll();
       return Result.ok(user);
     } catch (e) {
-      return Result.error(Exception("Erro ao buscar os usuários: $e"));
+      return Result.error(AppException(message: e.toString()));
     }
   }
 
@@ -24,7 +25,7 @@ class UserRepositoryImplRemote implements UserRepository {
       final user = await _service.getById(id);
       return Result.ok(user);
     } catch (e) {
-      return Result.error(Exception("Erro ao buscar s usuário pelo id: $e"));
+      return Result.error(AppException(message: e.toString()));
     }
   }
 
@@ -34,7 +35,7 @@ class UserRepositoryImplRemote implements UserRepository {
       final created = await _service.create(user);
       return Result.ok(created);
     } catch (e) {
-      return Result.error(Exception("Erro ao criar o usuário: $e"));
+      return Result.error(AppException(message: e.toString()));
     }
   }
 
@@ -44,7 +45,7 @@ class UserRepositoryImplRemote implements UserRepository {
       final updated = await _service.update(user.id, user);
       return Result.ok(updated);
     } catch (e) {
-      return Result.error(Exception("Erro ao autualizar o usuário: $e"));
+      return Result.error(AppException(message: e.toString()));
     }
   }
 
@@ -54,7 +55,7 @@ class UserRepositoryImplRemote implements UserRepository {
       await _service.detele(id);
       return const Result.ok(null);
     } catch (e) {
-      return Result.error(Exception("Erro ao excluir o usuário: $e"));
+      return Result.error(AppException(message: e.toString()));
     }
   }
 }
