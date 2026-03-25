@@ -1,8 +1,9 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 class AppException implements Exception {
   final String message;
+  final int? statusCode;
+  final dynamic data;
 
-  AppException({required this.message});
+  const AppException({required this.message, this.statusCode, this.data});
 
   @override
   String toString() => message;

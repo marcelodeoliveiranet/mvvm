@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mvvm/domain/models/auth/auth_login_request.dart';
 import 'package:mvvm/ui/auth/view_model/auth_login_viewmodel.dart';
 import 'package:mvvm/ui/auth/view_model/auth_view_model.dart';
+import 'package:mvvm/ui/widgets/common/show_dialog_error_widget.dart';
 import 'package:mvvm/utils/view_model_state.dart';
 import 'package:provider/provider.dart';
 
@@ -17,28 +18,31 @@ class _AuthLoginState extends State<AuthLogin> {
   final emailController = TextEditingController();
   final senhaController = TextEditingController();
 
+  late AuthLoginViewModel vm;
+
+  void _listener() {
+    if (vm.state == ViewModelState.error && mounted) {
+      showDialog(
+        context: context,
+        builder: (_) => ShowDialogErrorWidget(message: vm.errorMessage!),
+      );
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    vm = context.read<AuthLoginViewModel>();
+    vm.addListener(_listener);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthLoginViewModel>(
       builder: (context, vm, child) {
         if (vm.state == ViewModelState.loading) {
           return Center(child: CircularProgressIndicator());
-        }
-
-        if (vm.state == ViewModelState.error) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(vm.errorMessage!),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: null,
-                  child: const Text("Tentar novamente"),
-                ),
-              ],
-            ),
-          );
         }
 
         return Scaffold(
@@ -135,6 +139,7 @@ class _AuthLoginState extends State<AuthLogin> {
   void dispose() {
     emailController.dispose();
     senhaController.dispose();
+    vm.removeListener(_listener);
     super.dispose();
   }
 }
