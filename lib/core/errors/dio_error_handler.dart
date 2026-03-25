@@ -93,6 +93,10 @@ class DioErrorHandler {
       }
     }
 
-    return "Erro HTTP ${statusCode ?? ''}";
+    if (statusCode == null) {
+      return "Erro HTTP";
+    } else {
+      return "Erro HTTP $statusCode - $data";
+    }
   }
 }
