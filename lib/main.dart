@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mvvm/config/dependencies.dart';
-import 'package:mvvm/ui/user/widgets/user_list_page.dart';
+import 'package:mvvm/data/repositories/auth/auth_repository.dart';
+import 'package:mvvm/routing/app_router.dart';
+import 'package:mvvm/ui/auth/view_model/auth_view_model.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -15,7 +17,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final authViewModel = context.read<AuthViewModel>();
+    final authRepository = context.read<AuthRepository>();
+
+    final router = createRouter(
+      authViewModel: authViewModel,
+      authRepository: authRepository,
+    );
+
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       title: 'Cadastro de Usuários',
       theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
       darkTheme: ThemeData(
@@ -26,7 +37,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.dark,
-      home: const UserListPage(),
+      routerConfig: router,
     );
   }
 }

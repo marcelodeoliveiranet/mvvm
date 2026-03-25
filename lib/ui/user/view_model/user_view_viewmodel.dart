@@ -3,8 +3,9 @@ import 'package:mvvm/data/repositories/user/user_repository.dart';
 import 'package:mvvm/domain/models/user/user.dart';
 import 'package:mvvm/utils/result.dart';
 
-class UserViewModel extends ChangeNotifier {
-  UserViewModel(UserRepository repository) : _repository = repository;
+class UserViewViewModel extends ChangeNotifier {
+  UserViewViewModel({required UserRepository userRepository})
+    : _repository = userRepository;
 
   final UserRepository _repository;
 

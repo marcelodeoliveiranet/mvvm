@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mvvm/ui/user/view_model/user_view_model.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mvvm/routing/routes.dart';
+import 'package:mvvm/ui/user/view_model/user_view_viewmodel.dart';
 import 'package:provider/provider.dart';
 
 class UserListView extends StatelessWidget {
@@ -7,7 +9,7 @@ class UserListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void confirmDelete(BuildContext context, UserViewModel vm, int userId) {
+    void confirmDelete(BuildContext context, UserViewViewModel vm, int userId) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -32,7 +34,8 @@ class UserListView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Usuários Cadastrados")),
-      body: Consumer<UserViewModel>(
+
+      body: Consumer<UserViewViewModel>(
         builder: (context, vm, child) {
           if (vm.isLoading) {
             return Center(child: CircularProgressIndicator());
@@ -81,6 +84,12 @@ class UserListView extends StatelessWidget {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.push(AppRoutes.userRegister);
+        },
+        child: Icon(Icons.add, color: Colors.white),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:mvvm/core/network/auth_interceptor.dart';
 import 'package:mvvm/core/storage/auth_stored/auth_stored.dart';
 
 class DioFactory {
@@ -12,54 +13,12 @@ class DioFactory {
       ),
     );
 
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          final token = storage.accessToken;
-
-          if (token != null && token.isNotEmpty) {
-            options.headers["Authorization"] = "Bearer $token";
-          }
-
-          return handler.next(options);
-        },
-
-        onError: (error, handler) async {
-          if (error.response?.statusCode == 401) {
-            final refreshToken = storage.refreshToken;
-
-            if (refreshToken == null) {
-              await storage.clear();
-              return handler.next(error);
-            }
-
-            try {
-              final refreshDio = Dio();
-              final response = await refreshDio.post(
-                "http://192.168.15.89:5229/api/auth/refresh",
-                data: {"refreshtoken": refreshToken},
-              );
-
-              final newAcessToken = response.data["accessToken"];
-              final newRefreshToken = response.data["refreshToken"];
-
-              await storage.saveTokens(newAcessToken, newRefreshToken);
-
-              final requestOptions = error.requestOptions;
-              requestOptions.headers["Authorization"] = "Bearer $newAcessToken";
-
-              final cloneResponse = await dio.fetch(requestOptions);
-              return handler.resolve(cloneResponse);
-            } catch (e) {
-              await storage.clear();
-              return handler.next(error);
-            }
-          }
-
-          return handler.next(error);
-        },
-      ),
+    final refreshDio = Dio(
+      BaseOptions(baseUrl: "http://192.168.15.22:51137/api/"),
     );
+
+    dio.interceptors.add(AuthInterceptor(storage, refreshDio, dio));
+
     return dio;
   }
 }

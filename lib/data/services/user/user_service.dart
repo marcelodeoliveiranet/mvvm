@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:mvvm/core/exceptions/app_exception.dart';
+import 'package:mvvm/core/errors/dio_error_handler.dart';
 import 'package:mvvm/domain/models/user/user.dart';
 
 class UserService {
@@ -15,7 +15,7 @@ class UserService {
       final List data = response.data;
       return data.map((json) => User.fromJson(json)).toList();
     } on DioException catch (e) {
-      throw _handlerError(e);
+      throw DioErrorHandler.handle(e);
     }
   }
 
@@ -24,7 +24,7 @@ class UserService {
       final response = await _dio.get("$endPoint/$id");
       return User.fromJson(response.data);
     } on DioException catch (e) {
-      throw _handlerError(e);
+      throw DioErrorHandler.handle(e);
     }
   }
 
@@ -34,7 +34,7 @@ class UserService {
 
       return User.fromJson(response.data);
     } on DioException catch (e) {
-      throw _handlerError(e);
+      throw DioErrorHandler.handle(e);
     }
   }
 
@@ -44,7 +44,7 @@ class UserService {
 
       return User.fromJson(response.data);
     } on DioException catch (e) {
-      throw _handlerError(e);
+      throw DioErrorHandler.handle(e);
     }
   }
 
@@ -52,27 +52,7 @@ class UserService {
     try {
       await _dio.delete("$endPoint/$id");
     } on DioException catch (e) {
-      throw _handlerError(e);
-    }
-  }
-
-  Exception _handlerError(DioException e) {
-    switch (e.type) {
-      case DioExceptionType.connectionTimeout:
-        return AppException(
-          message: "Erro de timeout com o servidor: ${e.message}",
-        );
-
-      case DioExceptionType.receiveTimeout:
-        return AppException(message: "Erro de receivetimeour: ${e.message}");
-
-      case DioExceptionType.connectionError:
-        return AppException(
-          message: "Erro de conexão com o servidor: ${e.message}",
-        );
-
-      default:
-        return AppException(message: "Erro critico: ${e.message}");
+      throw DioErrorHandler.handle(e);
     }
   }
 }
