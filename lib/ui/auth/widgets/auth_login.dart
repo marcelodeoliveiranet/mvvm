@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mvvm/domain/models/auth/auth_login_request.dart';
 import 'package:mvvm/ui/auth/view_model/auth_login_viewmodel.dart';
-import 'package:mvvm/ui/auth/view_model/auth_view_model.dart';
 import 'package:mvvm/ui/widgets/common/show_dialog_error_widget.dart';
 import 'package:mvvm/utils/view_model_state.dart';
 import 'package:provider/provider.dart';
@@ -103,20 +102,12 @@ class _AuthLoginState extends State<AuthLogin> {
                       ElevatedButton(
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
-                            final authVM = context.read<AuthViewModel>();
-
                             final authLoginRequest = AuthLoginRequest(
                               email: emailController.text,
                               senha: senhaController.text,
                             );
 
-                            final success = await vm.login(authLoginRequest);
-
-                            if (!mounted) return;
-
-                            if (success) {
-                              authVM.setLoggedIn();
-                            }
+                            await vm.login(authLoginRequest);
                           }
                         },
                         child: Padding(

@@ -42,8 +42,10 @@ GoRouter createRouter({
               ChangeNotifierProvider.value(value: authViewModel),
 
               ChangeNotifierProvider(
-                create: (_) =>
-                    AuthLoginViewModel(authRepository: authRepository),
+                create: (_) => AuthLoginViewModel(
+                  authRepository: authRepository,
+                  authViewModel: authViewModel,
+                ),
               ),
             ],
             child: const AuthLogin(),

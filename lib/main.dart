@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final providers = await getDependecies();
+  final providers = await getDependencies();
 
   runApp(MultiProvider(providers: providers, child: const MyApp()));
 }
@@ -17,12 +17,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = context.read<AuthViewModel>();
-    final authRepository = context.read<AuthRepository>();
-
     final router = createRouter(
-      authViewModel: authViewModel,
-      authRepository: authRepository,
+      authViewModel: context.read<AuthViewModel>(),
+      authRepository: context.read<AuthRepository>(),
     );
 
     return MaterialApp.router(

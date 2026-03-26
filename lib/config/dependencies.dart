@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<List<SingleChildWidget>> getDependecies() async {
+Future<List<SingleChildWidget>> getDependencies() async {
   final sharedPreferences = await SharedPreferences.getInstance();
 
   return [
@@ -53,8 +53,10 @@ Future<List<SingleChildWidget>> getDependecies() async {
     ChangeNotifierProvider<AuthViewModel>(create: (context) => AuthViewModel()),
 
     ChangeNotifierProvider<AuthLoginViewModel>(
-      create: (context) =>
-          AuthLoginViewModel(authRepository: context.read<AuthRepository>()),
+      create: (context) => AuthLoginViewModel(
+        authRepository: context.read<AuthRepository>(),
+        authViewModel: context.read<AuthViewModel>(),
+      ),
     ),
   ];
 }
