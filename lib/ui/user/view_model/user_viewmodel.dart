@@ -1,124 +1,101 @@
 import 'package:flutter/material.dart';
 import 'package:mvvm/data/repositories/user/user_repository.dart';
 import 'package:mvvm/domain/models/user/user.dart';
+import 'package:mvvm/utils/command.dart';
 import 'package:mvvm/utils/result.dart';
-import 'package:mvvm/utils/view_model_state.dart';
 
 class UserViewModel extends ChangeNotifier {
   UserViewModel({required UserRepository userRepository})
-    : _repository = userRepository;
+    : _repository = userRepository {
+    loadUsersCommand = Command0(loadUsers);
+    getUserByIdCommand = Command1(getUserById);
+    createUserCommand = Command1(createUser);
+    updateUserCommand = Command1(updateUser);
+    deleteUserCommand = Command1(deleteUser);
+  }
 
   final UserRepository _repository;
 
+  late Command0<List<User>> loadUsersCommand;
+  late Command1<User, int> getUserByIdCommand;
+  late Command1<User, User> createUserCommand;
+  late Command1<User, User> updateUserCommand;
+  late Command1<void, int> deleteUserCommand;
+
   List<User> users = [];
-  User? selectedUser;
 
-  ViewModelState state = ViewModelState.idle;
-  String? errorMessage;
-
-  Future<void> loadUsers() async {
-    state = ViewModelState.loading;
-    errorMessage = null;
-    notifyListeners();
-
+  Future<Result<List<User>>> loadUsers() async {
     final result = await _repository.getAll();
 
     switch (result) {
       case Ok(value: final data):
-        state = ViewModelState.success;
         users = data;
+        notifyListeners();
+        return Result.ok(data);
 
-      case Error(error: final e):
-        state = ViewModelState.error;
-        errorMessage = e.toString();
+      case Failure(error: final e):
+        return Result.error(e);
     }
-
-    notifyListeners();
   }
 
-  Future<void> getUserById(int id) async {
-    state = ViewModelState.loading;
-    errorMessage = null;
-    notifyListeners();
-
+  Future<Result<User>> getUserById(int id) async {
     final result = await _repository.getById(id);
 
     switch (result) {
       case Ok(value: final user):
-        state = ViewModelState.success;
-        selectedUser = user;
+        notifyListeners();
+        return Result.ok(user);
 
-      case Error(error: final e):
-        state = ViewModelState.error;
-        errorMessage = e.toString();
+      case Failure(error: final e):
+        return Result.error(e);
     }
-
-    notifyListeners();
   }
 
-  Future<void> createUser(User user) async {
-    state = ViewModelState.loading;
-    errorMessage = null;
-    notifyListeners();
-
+  Future<Result<User>> createUser(User user) async {
     final result = await _repository.create(user);
 
     switch (result) {
-      case Ok(value: final created):
-        state = ViewModelState.success;
-        users.add(created);
+      case Ok(value: final userCreated):
+        users.add(userCreated);
+        notifyListeners();
+        return Result.ok(userCreated);
 
-      case Error(error: final e):
-        state = ViewModelState.error;
-        errorMessage = e.toString();
+      case Failure(error: final e):
+        return Result.error(e);
     }
-
-    notifyListeners();
   }
 
-  Future<void> updateUser(User user) async {
-    state = ViewModelState.loading;
-    errorMessage = null;
-    notifyListeners();
-
+  Future<Result<User>> updateUser(User user) async {
     final result = await _repository.update(user);
 
     switch (result) {
       case Ok(value: final updated):
-        state = ViewModelState.success;
         final index = users.indexWhere((u) => u.id == updated.id);
+
         if (index != -1) {
           users[index] = updated;
-          users = users.map((u) {
-            return u.id == updated.id ? updated : u;
-          }).toList();
+          users = List.from(users);
         }
 
-      case Error(error: final e):
-        state = ViewModelState.error;
-        errorMessage = e.toString();
-    }
+        notifyListeners();
+        return Result.ok(updated);
 
-    notifyListeners();
+      case Failure(error: final e):
+        return Result.error(e);
+    }
   }
 
-  Future<void> deleteUser(int id) async {
-    state = ViewModelState.loading;
-    errorMessage = null;
-    notifyListeners();
-
+  Future<Result<void>> deleteUser(int id) async {
     final result = await _repository.delete(id);
 
     switch (result) {
       case Ok():
-        state = ViewModelState.success;
         users.removeWhere((u) => u.id == id);
+        notifyListeners();
+        return Result.ok(null);
 
-      case Error(error: final e):
-        state = ViewModelState.error;
-        errorMessage = e.toString();
+      case Failure(error: final e):
+        return Result.error(e);
     }
-
-    notifyListeners();
   }
 }

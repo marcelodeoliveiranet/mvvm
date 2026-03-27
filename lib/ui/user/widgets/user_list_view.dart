@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mvvm/domain/models/user/user.dart';
 import 'package:mvvm/routing/routes.dart';
 import 'package:mvvm/ui/auth/view_model/auth_login_viewmodel.dart';
 import 'package:mvvm/ui/user/view_model/user_viewmodel.dart';
-import 'package:mvvm/utils/view_model_state.dart';
 import 'package:provider/provider.dart';
 
 class UserListView extends StatelessWidget {
@@ -11,27 +11,16 @@ class UserListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void confirmDelete(BuildContext context, UserViewModel vm, int userId) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Excluir Usuário"),
-          content: const Text("Deseja realmente excluir?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancelar"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                vm.deleteUser(userId);
-              },
-              child: const Text("Excluir"),
-            ),
-          ],
-        ),
-      );
+    final vm = context.watch<UserViewModel>();
+    final loadCmd = context.watch<UserViewModel>().loadUsersCommand;
+
+    //Primeira execução
+    //Se eu entendi direito esta linha Future.microtask faz o seguinte
+    //execute isso logo depois que o build atual terminar
+    //Sem esta linha as vezes ela mostrava um tela em branco ou a mensagem
+    //nenhum usuario cadastrado e depois mostrava os usuarios cadastrados
+    if (!loadCmd.running && loadCmd.result == null) {
+      Future.microtask(loadCmd.execute);
     }
 
     return Scaffold(
@@ -40,30 +29,28 @@ class UserListView extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              final vm = context.read<AuthLoginViewModel>();
-              await vm.logout();
+              await context.read<AuthLoginViewModel>().logout();
             },
             icon: const Icon(Icons.logout),
             tooltip: "Logout",
           ),
         ],
       ),
-
-      body: Consumer<UserViewModel>(
-        builder: (context, vm, child) {
-          if (vm.state == ViewModelState.loading) {
-            return Center(child: CircularProgressIndicator());
+      body: Builder(
+        builder: (context) {
+          if (loadCmd.running) {
+            return const Center(child: CircularProgressIndicator());
           }
 
-          if (vm.errorMessage != null) {
+          if (loadCmd.error) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(vm.errorMessage!),
+                  Text(loadCmd.result.toString()),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: vm.loadUsers,
+                    onPressed: loadCmd.execute,
                     child: const Text("Tentar novamente"),
                   ),
                 ],
@@ -71,48 +58,101 @@ class UserListView extends StatelessWidget {
             );
           }
 
-          if (vm.users.isEmpty) {
-            return Center(child: const Text("Nenhum usuário cadastrado"));
+          if (loadCmd.result == null) {
+            return const SizedBox();
           }
 
+          if (vm.users.isEmpty) {
+            return const Center(child: Text("Nenhum usuário cadastrado"));
+          }
+
+          // 🔹 Sucesso
           return RefreshIndicator(
-            onRefresh: vm.loadUsers,
-            child: ListView.builder(
-              itemCount: vm.users.length,
-              itemBuilder: (context, index) {
-                final user = vm.users[index];
+            onRefresh: loadCmd.execute,
+            child: Selector<UserViewModel, List<User>>(
+              selector: (_, vm) => vm.users,
+              builder: (_, users, _) {
+                return ListView.builder(
+                  itemCount: users.length,
+                  itemBuilder: (context, index) {
+                    final user = users[index];
+                    final deleteCmd = vm.deleteUserCommand;
 
-                return ListTile(
-                  leading: CircleAvatar(child: Text(user.nome[0])),
-                  title: Text(user.nome),
-                  subtitle: Text(user.email),
+                    return ListTile(
+                      leading: CircleAvatar(child: Text(user.nome[0])),
+                      title: Text(user.nome),
+                      subtitle: Text(user.email),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // ✏️ Editar
+                          IconButton(
+                            onPressed: () async {
+                              final result = await context.push(
+                                AppRoutes.userForm,
+                                extra: {'user': user},
+                              );
 
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: () async {
-                          final result = await context.push(
-                            AppRoutes.userForm,
-                            extra: {'user': user},
-                          );
+                              if (!context.mounted) return;
 
-                          if (!context.mounted) return;
+                              if (result == true) {
+                                loadCmd.execute();
+                                //vm.loadUsersCommand.execute();
+                              }
+                            },
+                            icon: const Icon(Icons.edit),
+                          ),
 
-                          if (result == true) {
-                            context.read<UserViewModel>().loadUsers();
-                          }
-                        },
-                        icon: const Icon(Icons.edit),
+                          // 🗑️ Excluir
+                          IconButton(
+                            onPressed: deleteCmd.running
+                                ? null
+                                : () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (_) => AlertDialog(
+                                        title: const Text("Excluir Usuário"),
+                                        content: const Text(
+                                          "Deseja realmente excluir?",
+                                          style: TextStyle(fontSize: 18),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () =>
+                                                Navigator.pop(context),
+                                            child: const Text(
+                                              "Cancelar",
+                                              style: TextStyle(fontSize: 15),
+                                            ),
+                                          ),
+                                          TextButton(
+                                            onPressed: () {
+                                              Navigator.pop(context);
+                                              deleteCmd.execute(user.id!);
+                                            },
+                                            child: const Text(
+                                              "Excluir",
+                                              style: TextStyle(fontSize: 15),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                            icon: deleteCmd.running
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.delete),
+                          ),
+                        ],
                       ),
-                      IconButton(
-                        onPressed: () {
-                          confirmDelete(context, vm, user.id!);
-                        },
-                        icon: const Icon(Icons.delete),
-                      ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             ),
@@ -126,10 +166,11 @@ class UserListView extends StatelessWidget {
           if (!context.mounted) return;
 
           if (result == true) {
-            context.read<UserViewModel>().loadUsers();
+            loadCmd.execute();
+            //context.read<UserViewModel>().loadUsersCommand.execute();
           }
         },
-        child: Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

@@ -94,9 +94,9 @@ class DioErrorHandler {
     }
 
     if (statusCode == null) {
-      return "Erro HTTP";
+      return "Erro HTTP desconhecido";
     } else {
-      return "Erro HTTP $statusCode - $data";
+      return "$data";
     }
   }
 }

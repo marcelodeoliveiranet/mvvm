@@ -32,7 +32,7 @@ class AuthRepositoryImplRemote implements AuthRepository {
   Future<Result<void>> logout() async {
     try {
       await _storage.clear();
-      return const Result.ok(null);
+      return Result.ok(null);
     } catch (e) {
       return Result.error(AppException(message: e.toString()));
     }

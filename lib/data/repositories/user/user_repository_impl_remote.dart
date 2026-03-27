@@ -53,7 +53,7 @@ class UserRepositoryImplRemote implements UserRepository {
   Future<Result<void>> delete(int id) async {
     try {
       await _service.detele(id);
-      return const Result.ok(null);
+      return Result.ok(null);
     } catch (e) {
       return Result.error(AppException(message: e.toString()));
     }
