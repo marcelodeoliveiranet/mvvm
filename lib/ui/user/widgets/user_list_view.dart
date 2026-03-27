@@ -70,7 +70,6 @@ class UserListView extends StatelessWidget {
             return const Center(child: Text("Nenhum usuário cadastrado"));
           }
 
-          // 🔹 Sucesso
           return RefreshIndicator(
             onRefresh: loadCmd.execute,
             child: Selector<UserViewModel, List<User>>(
@@ -89,7 +88,6 @@ class UserListView extends StatelessWidget {
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // ✏️ Editar
                           IconButton(
                             onPressed: () async {
                               final result = await context.push(
@@ -101,13 +99,11 @@ class UserListView extends StatelessWidget {
 
                               if (result == true) {
                                 loadCmd.execute();
-                                //vm.loadUsersCommand.execute();
                               }
                             },
                             icon: const Icon(Icons.edit),
                           ),
 
-                          // 🗑️ Excluir
                           IconButton(
                             onPressed: deleteCmd.running
                                 ? null
