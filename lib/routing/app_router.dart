@@ -5,8 +5,8 @@ import 'package:mvvm/ui/auth/view_model/auth_login_viewmodel.dart';
 import 'package:mvvm/ui/auth/view_model/auth_view_model.dart';
 import 'package:mvvm/ui/auth/widgets/auth_login.dart';
 import 'package:mvvm/ui/user/view_model/user_viewmodel.dart';
-import 'package:mvvm/ui/user/widgets/user_list_page.dart';
 import 'package:mvvm/ui/user/widgets/user_form_page.dart';
+import 'package:mvvm/ui/user/widgets/user_list_view.dart';
 import 'package:provider/provider.dart';
 
 GoRouter createRouter({
@@ -57,7 +57,7 @@ GoRouter createRouter({
       GoRoute(
         path: AppRoutes.userList,
         builder: (context, state) {
-          return const UserListPage();
+          return const UserListView();
         },
       ),
 
