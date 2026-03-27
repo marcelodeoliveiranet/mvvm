@@ -47,7 +47,10 @@ class UserListView extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(loadCmd.result.toString()),
+                  Text(
+                    loadCmd.result.toString(),
+                    style: TextStyle(fontSize: 18),
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: loadCmd.execute,
