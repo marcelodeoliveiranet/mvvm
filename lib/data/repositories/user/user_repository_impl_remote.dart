@@ -42,7 +42,7 @@ class UserRepositoryImplRemote implements UserRepository {
   @override
   Future<Result<User>> update(User user) async {
     try {
-      final updated = await _service.update(user.id, user);
+      final updated = await _service.update(user.id!, user);
       return Result.ok(updated);
     } catch (e) {
       return Result.error(AppException(message: e.toString()));

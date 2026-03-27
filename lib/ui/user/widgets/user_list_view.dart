@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mvvm/routing/routes.dart';
-import 'package:mvvm/ui/user/view_model/user_view_viewmodel.dart';
+import 'package:mvvm/ui/auth/view_model/auth_login_viewmodel.dart';
+import 'package:mvvm/ui/user/view_model/user_viewmodel.dart';
+import 'package:mvvm/utils/view_model_state.dart';
 import 'package:provider/provider.dart';
 
 class UserListView extends StatelessWidget {
@@ -9,7 +11,7 @@ class UserListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void confirmDelete(BuildContext context, UserViewViewModel vm, int userId) {
+    void confirmDelete(BuildContext context, UserViewModel vm, int userId) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -33,11 +35,23 @@ class UserListView extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Usuários Cadastrados")),
+      appBar: AppBar(
+        title: const Text("Usuários Cadastrados"),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              final vm = context.read<AuthLoginViewModel>();
+              await vm.logout();
+            },
+            icon: const Icon(Icons.logout),
+            tooltip: "Logout",
+          ),
+        ],
+      ),
 
-      body: Consumer<UserViewViewModel>(
+      body: Consumer<UserViewModel>(
         builder: (context, vm, child) {
-          if (vm.isLoading) {
+          if (vm.state == ViewModelState.loading) {
             return Center(child: CircularProgressIndicator());
           }
 
@@ -73,11 +87,31 @@ class UserListView extends StatelessWidget {
                   title: Text(user.nome),
                   subtitle: Text(user.email),
 
-                  trailing: IconButton(
-                    onPressed: () {
-                      confirmDelete(context, vm, user.id);
-                    },
-                    icon: const Icon(Icons.delete),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () async {
+                          final result = await context.push(
+                            AppRoutes.userForm,
+                            extra: {'user': user},
+                          );
+
+                          if (!context.mounted) return;
+
+                          if (result == true) {
+                            context.read<UserViewModel>().loadUsers();
+                          }
+                        },
+                        icon: const Icon(Icons.edit),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          confirmDelete(context, vm, user.id!);
+                        },
+                        icon: const Icon(Icons.delete),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -86,8 +120,14 @@ class UserListView extends StatelessWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push(AppRoutes.userRegister);
+        onPressed: () async {
+          final result = await context.push(AppRoutes.userForm);
+
+          if (!context.mounted) return;
+
+          if (result == true) {
+            context.read<UserViewModel>().loadUsers();
+          }
         },
         child: Icon(Icons.add, color: Colors.white),
       ),

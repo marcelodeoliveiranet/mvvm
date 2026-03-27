@@ -50,6 +50,7 @@ class AuthLoginViewModel extends ChangeNotifier {
     switch (result) {
       case Ok():
         state = ViewModelState.success;
+        _authViewModel.setLoggedOut();
         break;
       case Error(error: final e):
         state = ViewModelState.error;
