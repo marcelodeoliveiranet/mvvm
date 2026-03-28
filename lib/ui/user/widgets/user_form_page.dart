@@ -104,6 +104,7 @@ class _UserFormPageState extends State<UserFormPage> {
                       key: _formKey,
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
+                        spacing: 16,
                         children: [
                           TextFormField(
                             controller: _nomeController,
@@ -118,8 +119,6 @@ class _UserFormPageState extends State<UserFormPage> {
                                 ? 'Informe o nome'
                                 : null,
                           ),
-
-                          const SizedBox(height: 16),
 
                           TextFormField(
                             controller: _emailController,
@@ -140,8 +139,6 @@ class _UserFormPageState extends State<UserFormPage> {
                               return null;
                             },
                           ),
-
-                          const SizedBox(height: 16),
 
                           TextFormField(
                             controller: _senhaController,
