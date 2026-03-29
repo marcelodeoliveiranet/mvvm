@@ -20,45 +20,46 @@ class _AuthLoginState extends State<AuthLogin> {
 
   @override
   Widget build(BuildContext context) {
-    final cmd = context.select<AuthLoginViewModel, Command1>(
-      (vm) => vm.loginCommand,
-    );
+    final cmd = context.read<AuthLoginViewModel>().loginCommand;
 
-    _handleError(cmd);
+    return ListenableBuilder(
+      listenable: cmd,
+      builder: (context, child) {
+        return Scaffold(
+          body: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Center(
+              child: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: 16,
+                    children: [
+                      const _Title(),
+                      const SizedBox(height: 32),
 
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: 16,
-                children: [
-                  const _Title(),
-                  const SizedBox(height: 32),
+                      _EmailField(controller: emailController),
 
-                  _EmailField(controller: emailController),
+                      _PasswordField(
+                        controller: senhaController,
+                        onSubmit: () => _submit(cmd),
+                      ),
+                      const SizedBox(height: 24),
 
-                  _PasswordField(
-                    controller: senhaController,
-                    onSubmit: () => _submit(cmd),
+                      _LoginButton(
+                        isLoading: cmd.running,
+                        onPressed: () => _submit(cmd),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 24),
-
-                  _LoginButton(
-                    isLoading: cmd.running,
-                    onPressed: () => _submit(cmd),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -81,19 +82,6 @@ class _AuthLoginState extends State<AuthLogin> {
           return ShowDialogErrorWidget(message: messageError.toString());
         },
       );
-    }
-  }
-
-  void _handleError(Command1 cmd) {
-    if (cmd.error) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
-          context: context,
-          builder: (_) => ShowDialogErrorWidget(message: cmd.error.toString()),
-        );
-
-        cmd.clearResult(); // evita loop
-      });
     }
   }
 

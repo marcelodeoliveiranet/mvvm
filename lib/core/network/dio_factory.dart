@@ -8,8 +8,8 @@ class DioFactory {
     final dio = Dio(
       BaseOptions(
         baseUrl: Environment.baseUrlRemoteApi,
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 5),
+        connectTimeout: const Duration(seconds: 20),
+        receiveTimeout: const Duration(seconds: 20),
         headers: {"Content-Type": "application/json", "Accept": "*/*"},
       ),
     );
