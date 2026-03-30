@@ -43,7 +43,6 @@ class UserViewModel extends ChangeNotifier {
 
     switch (result) {
       case Ok(value: final user):
-        notifyListeners();
         return Result.ok(user);
 
       case Failure(error: final e):
