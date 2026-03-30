@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /d/Projetos/Flutter/Marcelo/mvvm -maxdepth 2 -type f -name *.md -o -name *.yaml -o -name .cursor* -o -name Makefile -o -name .github)"
+    ]
+  }
+}
