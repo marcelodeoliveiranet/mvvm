@@ -15,6 +15,7 @@ class AuthStored {
   }
 
   Future<void> clear() async {
-    await _preferences.clear();
+    await _preferences.remove("access_token");
+    await _preferences.remove("refresh_token");
   }
 }
