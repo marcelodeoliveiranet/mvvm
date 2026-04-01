@@ -1,27 +1,28 @@
 import 'package:go_router/go_router.dart';
 import 'package:mvvm/data/repositories/auth/auth_repository.dart';
 import 'package:mvvm/routing/routes.dart';
-import 'package:mvvm/ui/auth/view_model/auth_login_viewmodel.dart';
-import 'package:mvvm/ui/auth/view_model/auth_view_model.dart';
-import 'package:mvvm/ui/auth/widgets/auth_login.dart';
+import 'package:mvvm/ui/auth/login/view_model/login_viewmodel.dart';
+import 'package:mvvm/ui/auth/login/widgets/auth_login.dart';
 import 'package:mvvm/ui/user/view_model/user_viewmodel.dart';
 import 'package:mvvm/ui/user/widgets/user_form_page.dart';
 import 'package:mvvm/ui/user/widgets/user_list_view.dart';
 import 'package:provider/provider.dart';
 
-GoRouter createRouter({
-  required AuthViewModel authViewModel,
-  required AuthRepository authRepository,
-}) {
+GoRouter createRouter({required AuthRepository authRepository}) {
   return GoRouter(
     initialLocation: AppRoutes.login,
     debugLogDiagnostics: true,
 
-    refreshListenable: authViewModel,
+    refreshListenable: authRepository,
 
     redirect: (context, state) {
-      final isLoggedIn = authViewModel.isLoggedIn;
+      final isLoggedIn = authRepository.isLoggedIn;
       final isGoingToLogin = state.matchedLocation == AppRoutes.login;
+      final isGoinToUserForm = state.matchedLocation == AppRoutes.userForm;
+
+      if (!isLoggedIn && !isGoingToLogin && isGoinToUserForm) {
+        return AppRoutes.userForm;
+      }
 
       if (!isLoggedIn && !isGoingToLogin) {
         return AppRoutes.login;
@@ -40,13 +41,8 @@ GoRouter createRouter({
         builder: (context, state) {
           return MultiProvider(
             providers: [
-              ChangeNotifierProvider.value(value: authViewModel),
-
-              ChangeNotifierProvider(
-                create: (_) => AuthLoginViewModel(
-                  authRepository: authRepository,
-                  authViewModel: authViewModel,
-                ),
+              Provider(
+                create: (_) => LoginViewmodel(authRepository: authRepository),
               ),
             ],
             child: const AuthLogin(),

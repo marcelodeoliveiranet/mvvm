@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mvvm/domain/models/auth/auth_login_request.dart';
-import 'package:mvvm/ui/auth/view_model/auth_login_viewmodel.dart';
+import 'package:mvvm/routing/routes.dart';
+import 'package:mvvm/ui/auth/login/view_model/login_viewmodel.dart';
 import 'package:mvvm/ui/widgets/common/show_dialog_error_widget.dart';
 import 'package:mvvm/utils/command.dart';
 import 'package:mvvm/utils/result.dart';
@@ -20,7 +22,7 @@ class _AuthLoginState extends State<AuthLogin> {
 
   @override
   Widget build(BuildContext context) {
-    final cmd = context.read<AuthLoginViewModel>().loginCommand;
+    final cmd = context.read<LoginViewmodel>().loginCommand;
 
     return ListenableBuilder(
       listenable: cmd,
@@ -37,7 +39,12 @@ class _AuthLoginState extends State<AuthLogin> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     spacing: 16,
                     children: [
+                      Logo(),
+
+                      SizedBox(height: 15),
+
                       const _Title(),
+
                       const SizedBox(height: 32),
 
                       _EmailField(controller: emailController),
@@ -48,9 +55,19 @@ class _AuthLoginState extends State<AuthLogin> {
                       ),
                       const SizedBox(height: 24),
 
-                      _LoginButton(
-                        isLoading: cmd.running,
-                        onPressed: () => _submit(cmd),
+                      Row(
+                        children: [
+                          Expanded(child: UserCreateButton()),
+
+                          SizedBox(width: 10),
+
+                          Expanded(
+                            child: _LoginButton(
+                              isLoading: cmd.running,
+                              onPressed: () => _submit(cmd),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -163,6 +180,44 @@ class _PasswordField extends StatelessWidget {
   }
 }
 
+class Logo extends StatelessWidget {
+  const Logo({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 80,
+      height: 80,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          colors: [Color(0xFF3B82F6), Color(0xFF9333EA)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Icon(Icons.lock, color: Colors.white, size: 40),
+    );
+  }
+}
+
+class UserCreateButton extends StatelessWidget {
+  const UserCreateButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: () async {
+        await context.push(AppRoutes.userForm);
+      },
+      child: Padding(
+        padding: const EdgeInsetsGeometry.symmetric(vertical: 16),
+        child: const Text("Cadastrar", style: TextStyle(fontSize: 18)),
+      ),
+    );
+  }
+}
+
 class _LoginButton extends StatelessWidget {
   final bool isLoading;
   final VoidCallback onPressed;
@@ -173,6 +228,7 @@ class _LoginButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return ElevatedButton(
       onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: isLoading
@@ -181,7 +237,14 @@ class _LoginButton extends StatelessWidget {
                 width: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const Text('ENTRAR'),
+            : const Text(
+                'Entrar',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
       ),
     );
   }

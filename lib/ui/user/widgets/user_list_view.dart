@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mvvm/domain/models/user/user.dart';
 import 'package:mvvm/routing/routes.dart';
-import 'package:mvvm/ui/auth/view_model/auth_login_viewmodel.dart';
+import 'package:mvvm/ui/auth/logout/view_model/logout_viewmodel.dart';
 import 'package:mvvm/ui/user/view_model/user_viewmodel.dart';
 import 'package:provider/provider.dart';
 
@@ -29,7 +29,7 @@ class UserListView extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              await context.read<AuthLoginViewModel>().logout();
+              await context.read<LogoutViewmodel>().logout();
             },
             icon: const Icon(Icons.logout),
             tooltip: "Logout",
@@ -167,10 +167,9 @@ class UserListView extends StatelessWidget {
 
           if (result == true) {
             loadCmd.execute();
-            //context.read<UserViewModel>().loadUsersCommand.execute();
           }
         },
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.person_add, color: Colors.white),
       ),
     );
   }

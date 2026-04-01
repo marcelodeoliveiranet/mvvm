@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:mvvm/config/dependencies.dart';
 import 'package:mvvm/data/repositories/auth/auth_repository.dart';
 import 'package:mvvm/routing/app_router.dart';
-import 'package:mvvm/ui/auth/view_model/auth_view_model.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -17,10 +16,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final router = createRouter(
-      authViewModel: context.read<AuthViewModel>(),
-      authRepository: context.read<AuthRepository>(),
-    );
+    final router = createRouter(authRepository: context.read<AuthRepository>());
 
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
