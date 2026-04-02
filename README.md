@@ -192,13 +192,56 @@ Todos injetados via `context.read<T>()`.
 
 | Tecnologia | Versão | Finalidade |
 |---|---|---|
-| Flutter | 3.11.1 | Framework mobile |
+| Flutter | 3.41.4 | Framework mobile |
 | Provider | 6.1.5 | Gerenciamento de estado |
 | GoRouter | 17.1.0 | Navegação declarativa com guards |
 | Dio | 5.9.2 | Cliente HTTP com interceptors |
 | SharedPreferences | 2.5.4 | Armazenamento local |
 
+## Pré-requisitos
+
+- [Flutter](https://flutter.dev/) instalado (versão 3.41.4 ou superior)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e em execução
+
 ## Como Executar
+
+### 1. Subir a API e o Banco de Dados
+
+O projeto inclui um `docker-compose.yml` que provisiona um banco de dados **SQL Server 2019** e a **API REST** necessária para o app.
+
+```bash
+# Criar e iniciar os containers em segundo plano
+docker compose up -d
+```
+
+Isso irá criar dois containers:
+
+| Container | Descrição | Porta |
+|---|---|---|
+| `sqlserver_2019` | Banco de dados SQL Server 2019 | `1433` |
+| `access_refresh_jwt_api` | API REST com autenticação JWT | `5229` |
+
+Após os containers estarem rodando, a documentação da API estará disponível via Swagger:
+
+**Swagger UI:** [http://localhost:5229/swagger/index.html](http://localhost:5229/swagger/index.html)
+
+#### Comandos úteis do Docker
+
+```bash
+# Verificar se os containers estão rodando
+docker compose ps
+
+# Visualizar logs dos containers
+docker compose logs -f
+
+# Parar os containers
+docker compose down
+
+# Parar e remover os volumes (apaga os dados do banco)
+docker compose down -v
+```
+
+### 2. Executar o App Flutter
 
 ```bash
 # Instalar dependências
