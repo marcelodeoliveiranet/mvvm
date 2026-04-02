@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:mvvm/config/environment.dart';
 import 'package:mvvm/core/network/auth_interceptor.dart';
-import 'package:mvvm/core/storage/auth_stored/auth_stored.dart';
+import 'package:mvvm/data/services/local/shared_preferences_service.dart';
 
 class DioFactory {
-  static Dio createDio(AuthStored storage) {
+  static Dio createDio(SharedPreferencesService storage) {
     final dio = Dio(
       BaseOptions(
         baseUrl: Environment.baseUrlRemoteApi,

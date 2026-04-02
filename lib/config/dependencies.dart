@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:mvvm/core/network/dio_factory.dart';
-import 'package:mvvm/core/storage/auth_stored/auth_stored.dart';
+import 'package:mvvm/data/services/local/shared_preferences_service.dart';
 import 'package:mvvm/data/repositories/auth/auth_repository.dart';
 import 'package:mvvm/data/repositories/auth/auth_repository_impl_remote.dart';
 import 'package:mvvm/data/repositories/user/user_repository.dart';
@@ -20,12 +20,14 @@ Future<List<SingleChildWidget>> getDependencies() async {
   return [
     Provider<SharedPreferences>.value(value: sharedPreferences),
 
-    Provider<AuthStored>(
-      create: (context) => AuthStored(context.read<SharedPreferences>()),
+    Provider<SharedPreferencesService>(
+      create: (context) =>
+          SharedPreferencesService(context.read<SharedPreferences>()),
     ),
 
     Provider<Dio>(
-      create: (context) => DioFactory.createDio(context.read<AuthStored>()),
+      create: (context) =>
+          DioFactory.createDio(context.read<SharedPreferencesService>()),
     ),
 
     ///Services
@@ -46,7 +48,7 @@ Future<List<SingleChildWidget>> getDependencies() async {
     ChangeNotifierProvider<AuthRepository>(
       create: (context) => AuthRepositoryImplRemote(
         authService: context.read(),
-        authStored: context.read(),
+        authLocalService: context.read(),
       ),
     ),
 

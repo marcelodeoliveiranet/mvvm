@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
-import 'package:mvvm/core/storage/auth_stored/auth_stored.dart';
+import 'package:mvvm/data/services/local/shared_preferences_service.dart';
 
 class AuthInterceptor extends Interceptor {
-  final AuthStored _storage;
+  final SharedPreferencesService _storage;
   final Dio _refreshDio; // Usado apenas para pedir o novo token
   final Dio _mainDio; // Usado para repetir a requisição original
 

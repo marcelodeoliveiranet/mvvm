@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/foundation.dart';
 import 'package:mvvm/core/exceptions/app_exception.dart';
-import 'package:mvvm/core/storage/auth_stored/auth_stored.dart';
+import 'package:mvvm/data/services/local/shared_preferences_service.dart';
 import 'package:mvvm/data/repositories/auth/auth_repository.dart';
 import 'package:mvvm/data/services/auth/auth_service.dart';
 import 'package:mvvm/domain/models/auth/auth_login_request.dart';
@@ -12,12 +12,12 @@ class AuthRepositoryImplRemote extends ChangeNotifier
     implements AuthRepository {
   AuthRepositoryImplRemote({
     required AuthService authService,
-    required AuthStored authStored,
+    required SharedPreferencesService authLocalService,
   }) : _service = authService,
-       _storage = authStored;
+       _storage = authLocalService;
 
   final AuthService _service;
-  final AuthStored _storage;
+  final SharedPreferencesService _storage;
 
   @override
   Future<Result<AuthResponse>> login(AuthLoginRequest dadosLogin) async {

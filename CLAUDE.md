@@ -23,7 +23,7 @@ This is a Flutter MVVM app with Provider for state management. The codebase is i
 
 **UI** (`lib/ui/`) — Each module (auth, user) has ViewModels (`ChangeNotifier`) and widgets. ViewModels use the **Command pattern** (`lib/utils/command.dart`) for async operations, which tracks `running`/`error`/`completed` states and prevents duplicate execution.
 
-**Core** (`lib/core/`) — Network setup (Dio + `AuthInterceptor` for automatic token refresh on 401), local storage (`AuthStored` via SharedPreferences), and typed exception hierarchy (`AppException` → `HttpException`, `NetworkException`, etc.).
+**Core** (`lib/core/`) — Network setup (Dio + `AuthInterceptor` for automatic token refresh on 401) and typed exception hierarchy (`AppException` → `HttpException`, `NetworkException`, etc.). Local storage for auth tokens is handled by `AuthLocalService` in `lib/data/services/auth_local/`.
 
 ### Key Patterns
 
