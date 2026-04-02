@@ -1,6 +1,13 @@
-# Cadastro de Usuários — Flutter MVVM
+# Cadastro de Usuários — Flutter MVVM - JWT
 
 Aplicativo mobile em Flutter para **autenticação** e **gerenciamento de usuários** (CRUD completo), construído com arquitetura **MVVM**, Provider para gerenciamento de estado e padrões como Result Type e Command Pattern.
+
+## Screenshots
+
+<p align="center">
+  <img src="assets/images/tela_inicial.png" alt="Tela de Login" width="300"/>
+</p>
+<p align="center"><em>Tela de Login</em></p>
 
 ## Funcionalidades
 
@@ -224,6 +231,11 @@ Isso irá criar dois containers:
 Após os containers estarem rodando, a documentação da API estará disponível via Swagger:
 
 **Swagger UI:** [http://localhost:5229/swagger/index.html](http://localhost:5229/swagger/index.html)
+
+<p align="center">
+  <img src="assets/images/swagger.png" alt="Swagger UI - Documentação da API" width="700"/>
+</p>
+<p align="center"><em>Swagger UI — Documentação da API com os endpoints de Auth e User</em></p>
 
 #### Comandos úteis do Docker
 
