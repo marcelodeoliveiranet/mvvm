@@ -241,7 +241,23 @@ docker compose down
 docker compose down -v
 ```
 
-### 2. Executar o App Flutter
+### 3. ⚠️ Configurar o Endereço da API
+
+> **IMPORTANTE:** Antes de executar o app, você **deve** alterar a string `baseUrlRemoteApi` no arquivo `lib/config/environment.dart` para o endereço IP da sua máquina na rede local.
+>
+> ```dart
+> class Environment {
+>   static const String baseUrlRemoteApi = "http://<SEU_IP_LOCAL>:5229/api/";
+> }
+> ```
+>
+> **Por que?** O emulador/dispositivo físico não consegue acessar `localhost` da mesma forma que o computador host. Você precisa usar o IP da máquina na rede (ex: `192.168.x.x`).
+>
+> Para descobrir seu IP local:
+> - **Windows:** `ipconfig` no terminal
+> - **Linux/macOS:** `ifconfig` ou `ip addr`
+
+### 4. Executar o App Flutter
 
 ```bash
 # Instalar dependências
