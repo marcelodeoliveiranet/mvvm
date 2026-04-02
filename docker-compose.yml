@@ -1,0 +1,28 @@
+name: access_refresh_api
+
+services:
+  # 1. Banco de Dados
+  db:
+    image: "mcr.microsoft.com/mssql/server:2019-latest"
+    container_name: sqlserver_2019
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "Jetro@302522"
+    volumes:
+      - sql_data:/var/opt/mssql/data
+
+  # 2. Sua API
+  accessrefreshjwt.api:
+    image: marcelodeoliveira1970/accessrefreshjwtapi:latest
+    container_name: access_refresh_jwt_api
+    ports:
+      - "5229:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=db;Database=master;User Id=sa;Password=Jetro@302522;TrustServerCertificate=True
+    depends_on:
+      - db
+
+volumes:
+  sql_data:
