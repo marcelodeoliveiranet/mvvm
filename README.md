@@ -164,6 +164,188 @@ lib/
 └── main.dart                      # Ponto de entrada da aplicação
 ```
 
+## Testes
+
+O projeto possui uma suíte completa de testes automatizados cobrindo todas as camadas da arquitetura, com **204 testes** e **98.4% de cobertura de código**.
+
+### Executar os Testes
+
+```bash
+# Executar todos os testes
+flutter test
+
+# Executar com relatório de cobertura
+flutter test --coverage
+
+# Executar um arquivo de teste específico
+flutter test test/ui/user/view_model/user_viewmodel_test.dart
+```
+
+### Cobertura por Arquivo
+
+| Arquivo | Cobertura |
+|---------|-----------|
+| `core/errors/dio_error_handler.dart` | 97.9% |
+| `core/exceptions/app_exception.dart` | 100% |
+| `core/exceptions/http_exception.dart` | 100% |
+| `core/exceptions/network_exception.dart` | 100% |
+| `core/exceptions/unknown_exception.dart` | 100% |
+| `core/network/auth_interceptor.dart` | 100% |
+| `data/repositories/auth/auth_repository_impl_remote.dart` | 88.9% |
+| `data/repositories/user/user_repository_impl_remote.dart` | 100% |
+| `data/services/auth/auth_service.dart` | 100% |
+| `data/services/local/shared_preferences_service.dart` | 100% |
+| `data/services/user/user_service.dart` | 100% |
+| `domain/models/auth/auth_login_request.dart` | 100% |
+| `domain/models/auth/auth_refresh_token.dart` | 100% |
+| `domain/models/auth/auth_response.dart` | 100% |
+| `domain/models/user/user.dart` | 100% |
+| `routing/app_router.dart` | 95.2% |
+| `ui/auth/login/view_model/login_viewmodel.dart` | 100% |
+| `ui/auth/login/widgets/auth_login.dart` | 97.5% |
+| `ui/auth/logout/view_model/logout_viewmodel.dart` | 100% |
+| `ui/user/view_model/user_viewmodel.dart` | 100% |
+| `ui/user/widgets/user_form_page.dart` | 100% |
+| `ui/user/widgets/user_list_view.dart` | 95.7% |
+| `ui/widgets/common/show_dialog_error_widget.dart` | 100% |
+| `utils/command.dart` | 100% |
+| `utils/result.dart` | 100% |
+| **TOTAL** | **98.4%** |
+
+### Estrutura de Testes
+
+```
+test/
+├── mocks/                                          # Mocks manuais das dependências
+│   ├── mock_auth_repository.dart
+│   ├── mock_auth_service.dart
+│   ├── mock_shared_preferences_service.dart
+│   ├── mock_user_repository.dart
+│   └── mock_user_service.dart
+│
+├── core/
+│   ├── errors/
+│   │   └── dio_error_handler_test.dart             # 19 testes — conversão de DioException
+│   ├── exceptions/
+│   │   └── exceptions_test.dart                    # 13 testes — hierarquia de exceções
+│   └── network/
+│       └── auth_interceptor_test.dart              # 8 testes — injeção de token e refresh
+│
+├── data/
+│   ├── repositories/
+│   │   ├── auth/
+│   │   │   └── auth_repository_impl_remote_test.dart  # 7 testes — login/logout com tokens
+│   │   └── user/
+│   │       └── user_repository_impl_remote_test.dart  # 9 testes — CRUD com Result type
+│   └── services/
+│       ├── auth/
+│       │   └── auth_service_test.dart              # 5 testes — chamadas HTTP de auth
+│       ├── local/
+│       │   └── shared_preferences_service_test.dart # 4 testes — armazenamento local
+│       └── user/
+│           └── user_service_test.dart              # 10 testes — chamadas HTTP de usuário
+│
+├── domain/
+│   └── models/
+│       ├── auth/
+│       │   ├── auth_login_request_test.dart        # 4 testes — serialização
+│       │   ├── auth_refresh_token_test.dart        # 4 testes — serialização
+│       │   └── auth_response_test.dart             # 4 testes — serialização
+│       └── user/
+│           └── user_test.dart                      # 7 testes — serialização e id nullable
+│
+├── routing/
+│   └── app_router_test.dart                        # 8 testes — rotas, redirects e guards
+│
+├── ui/
+│   ├── auth/
+│   │   ├── login/
+│   │   │   ├── view_model/
+│   │   │   │   └── login_viewmodel_test.dart       # 5 testes — command de login
+│   │   │   └── widgets/
+│   │   │       └── auth_login_test.dart            # 7 testes — formulário e validação
+│   │   └── logout/
+│   │       └── view_model/
+│   │           └── logout_viewmodel_test.dart      # 5 testes — command de logout
+│   ├── user/
+│   │   ├── view_model/
+│   │   │   └── user_viewmodel_test.dart            # 18 testes — CRUD e gerenciamento de lista
+│   │   └── widgets/
+│   │       ├── user_form_page_test.dart            # 14 testes — criação, edição e validação
+│   │       └── user_list_view_test.dart            # 16 testes — listagem, exclusão e navegação
+│   └── widgets/
+│       └── common/
+│           └── show_dialog_error_widget_test.dart  # 2 testes — exibição e dismiss do dialog
+│
+└── utils/
+    ├── command_test.dart                           # 11 testes — estado, execução e prevenção duplicada
+    └── result_test.dart                            # 7 testes — Ok, Failure e pattern matching
+```
+
+### Tipos de Testes
+
+#### Testes Unitários
+
+Cobrem as camadas de domínio, dados e lógica de negócio isoladamente:
+
+- **Models** — Serialização (`toJson`/`fromJson`) e simetria de todos os modelos
+- **Utils** — `Result` (pattern matching, Ok/Failure) e `Command` (estados, prevenção de execução duplicada, listeners)
+- **Error Handling** — Conversão de `DioException` para exceções tipadas (`BadRequestException`, `UnauthorizedException`, etc.) e extração de mensagens de erro da API
+- **Services** — Chamadas HTTP com Dio mockado via `http_mock_adapter`, cobrindo sucesso e cenários de erro para cada endpoint
+- **Repositories** — Encapsulamento de services com `Result<T>`, incluindo salvamento de tokens, notificação de listeners e tratamento de falhas
+- **ViewModels** — Lógica de negócio (login, logout, CRUD de usuários), gerenciamento de estado da lista e integração com Commands
+
+#### Testes do AuthInterceptor
+
+Testam o fluxo completo de autenticação no nível de rede:
+
+- Injeção automática do Bearer Token em requests
+- Interceptação de erro 401 e tentativa de refresh
+- Salvamento de novos tokens após refresh bem-sucedido
+- Reenvio da request original com o novo token
+- Preservação de method, data e queryParameters no retry
+- Limpeza do storage quando o refresh falha ou o token expira
+
+#### Testes de Widget
+
+Testam a interface do usuário com interações reais:
+
+- **Tela de Login** — Renderização dos campos, validação de e-mail e senha, execução do login, exibição de erros e navegação para cadastro
+- **Lista de Usuários** — Loading, lista vazia, listagem com dados, avatares, botões de editar/deletar, diálogo de confirmação de exclusão, retry em erro, navegação e pull-to-refresh
+- **Formulário de Usuário** — Modo criação vs. edição, preenchimento automático dos campos, validação de todos os campos, submit com sucesso e exibição de erros
+- **Diálogo de Erro** — Exibição da mensagem e dismiss ao clicar "Ok"
+
+#### Testes de Routing
+
+Testam o sistema de navegação e guards de autenticação:
+
+- Redirecionamento para `/login` quando não autenticado
+- Redirecionamento para `/users` quando já autenticado
+- Acesso ao `/user-form` sem autenticação (para cadastro na tela de login)
+- Reação automática a mudanças de estado de autenticação via `refreshListenable`
+
+### Estratégia de Mocking
+
+Os testes utilizam **mocks manuais** (sem code generation) que implementam as interfaces abstratas do projeto:
+
+| Mock | Implementa | Permite configurar |
+|------|-----------|-------------------|
+| `MockAuthService` | `AuthService` | Resultado/erro de login e refresh |
+| `MockUserService` | `UserService` | Resultado/erro de cada operação CRUD |
+| `MockSharedPreferencesService` | `SharedPreferencesService` | Tokens e contadores de chamadas |
+| `MockAuthRepository` | `AuthRepository` | Estado de login e resultados |
+| `MockUserRepository` | `UserRepository` | Resultado de cada operação CRUD |
+
+Para os testes de services HTTP, utiliza-se o pacote `http_mock_adapter` para mockar o Dio com respostas configuráveis por endpoint.
+
+### Bibliotecas de Teste
+
+| Pacote | Finalidade |
+|--------|-----------|
+| `flutter_test` | Framework de testes do Flutter (unit + widget) |
+| `mockito` | Geração de mocks (disponível, não utilizado — mocks manuais preferidos) |
+| `http_mock_adapter` | Mock do Dio para testes de services HTTP |
+
 ## Padrões Utilizados
 
 ### Result Type
@@ -253,7 +435,7 @@ docker compose down
 docker compose down -v
 ```
 
-### 2. ⚠️ Configurar o Endereço da API
+### 2. Configurar o Endereço da API
 
 > **IMPORTANTE:** Antes de executar o app, você **deve** alterar a string `baseUrlRemoteApi` no arquivo `lib/config/environment.dart` para o endereço IP da sua máquina na rede local.
 >
@@ -283,6 +465,9 @@ flutter analyze
 
 # Executar testes
 flutter test
+
+# Executar testes com cobertura
+flutter test --coverage
 ```
 
 ## Rotas
