@@ -10,7 +10,6 @@ void main() {
   late Dio mainDio;
   late Dio refreshDio;
   late DioAdapter mainAdapter;
-  late DioAdapter refreshAdapter;
 
   setUp(() {
     mockStorage = MockSharedPreferencesService();
@@ -18,7 +17,7 @@ void main() {
     mainDio = Dio(BaseOptions(baseUrl: 'http://localhost/api/'));
     refreshDio = Dio(BaseOptions(baseUrl: 'http://localhost/api/'));
 
-    refreshAdapter = DioAdapter(dio: refreshDio);
+    DioAdapter(dio: refreshDio);
 
     mainDio.interceptors.add(AuthInterceptor(mockStorage, refreshDio, mainDio));
     mainAdapter = DioAdapter(dio: mainDio);
@@ -71,18 +70,21 @@ void main() {
       expect(mockStorage.clearCallCount, 1);
     });
 
-    test('deve limpar storage quando não há refresh token e recebe 401', () async {
-      mainAdapter.onGet(
-        'users',
-        (server) => server.reply(401, {'message': 'Não autorizado'}),
-      );
+    test(
+      'deve limpar storage quando não há refresh token e recebe 401',
+      () async {
+        mainAdapter.onGet(
+          'users',
+          (server) => server.reply(401, {'message': 'Não autorizado'}),
+        );
 
-      try {
-        await mainDio.get('users');
-      } catch (_) {}
+        try {
+          await mainDio.get('users');
+        } catch (_) {}
 
-      expect(mockStorage.clearCallCount, 1);
-    });
+        expect(mockStorage.clearCallCount, 1);
+      },
+    );
 
     test('deve limpar storage quando refresh falha com exceção', () async {
       final storage = MockSharedPreferencesService();
@@ -121,111 +123,99 @@ void main() {
       expect(storage.clearCallCount, 1);
     });
 
-    test('deve salvar novos tokens e reenviar request após refresh bem-sucedido', () async {
-      final storage = MockSharedPreferencesService();
-      await storage.saveTokens('oldAccess', 'oldRefresh');
+    test(
+      'deve salvar novos tokens e reenviar request após refresh bem-sucedido',
+      () async {
+        final storage = MockSharedPreferencesService();
+        await storage.saveTokens('oldAccess', 'oldRefresh');
 
-      final testRefreshDio = Dio(BaseOptions(baseUrl: 'http://test.com/api/'));
-      final testMainDio = Dio(BaseOptions(baseUrl: 'http://test.com/api/'));
+        final testRefreshDio = Dio(
+          BaseOptions(baseUrl: 'http://test.com/api/'),
+        );
+        final testMainDio = Dio(BaseOptions(baseUrl: 'http://test.com/api/'));
 
-      // Mock do refreshDio para retornar novos tokens
-      testRefreshDio.interceptors.add(InterceptorsWrapper(
-        onRequest: (options, handler) {
-          handler.resolve(Response(
-            requestOptions: options,
-            statusCode: 200,
-            data: {
-              'accessToken': 'newAccess',
-              'refreshToken': 'newRefresh',
+        // Mock do refreshDio para retornar novos tokens
+        testRefreshDio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: {
+                    'accessToken': 'newAccess',
+                    'refreshToken': 'newRefresh',
+                  },
+                ),
+              );
             },
-          ));
-        },
-      ));
+          ),
+        );
 
-      // Adiciona o AuthInterceptor
-      testMainDio.interceptors.add(
-        AuthInterceptor(storage, testRefreshDio, testMainDio),
-      );
+        // Adiciona o AuthInterceptor
+        testMainDio.interceptors.add(
+          AuthInterceptor(storage, testRefreshDio, testMainDio),
+        );
 
-      // Simula request original -> 401, retry -> 200
-      var callCount = 0;
-      String? retryAuthHeader;
+        // Simula request original -> 401, retry -> 200
+        // Vamos testar unitariamente o fluxo do interceptor chamando onError diretamente
+        final interceptor = AuthInterceptor(
+          storage,
+          testRefreshDio,
+          testMainDio,
+        );
 
-      testMainDio.interceptors.add(InterceptorsWrapper(
-        onRequest: (options, handler) {
-          callCount++;
-          if (callCount == 1) {
-            // Primeiro request: responde com 401
-            handler.resolve(Response(
-              requestOptions: options,
-              statusCode: 401,
-              data: {'message': 'Expirado'},
-            ));
-          } else {
-            // Retry: captura o header e responde sucesso
-            retryAuthHeader = options.headers['Authorization'] as String?;
-            handler.resolve(Response(
-              requestOptions: options,
-              statusCode: 200,
-              data: [{'id': 1, 'nome': 'Test', 'email': 't@t.com', 'senha': '123'}],
-            ));
-          }
-        },
-      ));
+        final requestOptions = RequestOptions(
+          path: 'users',
+          baseUrl: 'http://test.com/api/',
+          method: 'GET',
+          queryParameters: {'page': '1'},
+        );
 
-      // Hmm, resolver com status 401 não vai ativar onError do AuthInterceptor
-      // pois resolve() trata como sucesso. Precisamos de uma abordagem diferente.
-      // Vamos usar o DioAdapter para o mainDio diretamente.
-
-      // Vamos testar unitariamente o fluxo do interceptor chamando onError diretamente
-      final interceptor = AuthInterceptor(storage, testRefreshDio, testMainDio);
-
-      final requestOptions = RequestOptions(
-        path: 'users',
-        baseUrl: 'http://test.com/api/',
-        method: 'GET',
-        queryParameters: {'page': '1'},
-      );
-
-      final err = DioException(
-        requestOptions: requestOptions,
-        response: Response(
+        final err = DioException(
           requestOptions: requestOptions,
-          statusCode: 401,
-          data: {'message': 'Expirado'},
-        ),
-        type: DioExceptionType.badResponse,
-      );
+          response: Response(
+            requestOptions: requestOptions,
+            statusCode: 401,
+            data: {'message': 'Expirado'},
+          ),
+          type: DioExceptionType.badResponse,
+        );
 
-      // Configuramos o mainDio para retornar sucesso no retry
-      testMainDio.interceptors.clear();
-      testMainDio.interceptors.add(InterceptorsWrapper(
-        onRequest: (options, handler) {
-          retryAuthHeader = options.headers['Authorization'] as String?;
-          handler.resolve(Response(
-            requestOptions: options,
-            statusCode: 200,
-            data: [{'id': 1}],
-          ));
-        },
-      ));
+        // Configuramos o mainDio para retornar sucesso no retry
+        String? retryAuthHeader;
+        testMainDio.interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) {
+              retryAuthHeader = options.headers['Authorization'] as String?;
+              handler.resolve(
+                Response(
+                  requestOptions: options,
+                  statusCode: 200,
+                  data: [
+                    {'id': 1},
+                  ],
+                ),
+              );
+            },
+          ),
+        );
 
-      // Chama onError diretamente
-      Response? resolvedResponse;
-      DioException? rejectedError;
+        // Chama onError diretamente
+        final handler = ErrorInterceptorHandler();
 
-      final handler = ErrorInterceptorHandler();
+        // Infelizmente ErrorInterceptorHandler não expõe o resultado diretamente.
+        // Vamos usar uma abordagem mais simples: verificar que os tokens foram salvos.
+        interceptor.onError(err, handler);
 
-      // Infelizmente ErrorInterceptorHandler não expõe o resultado diretamente.
-      // Vamos usar uma abordagem mais simples: verificar que os tokens foram salvos.
-      interceptor.onError(err, handler);
+        // Aguarda o async completar
+        await Future.delayed(const Duration(milliseconds: 100));
 
-      // Aguarda o async completar
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      expect(storage.accessToken, 'newAccess');
-      expect(storage.refreshToken, 'newRefresh');
-    });
+        expect(storage.accessToken, 'newAccess');
+        expect(storage.refreshToken, 'newRefresh');
+        expect(retryAuthHeader, 'Bearer newAccess');
+      },
+    );
 
     test('deve preservar dados da request original no retry', () async {
       final storage = MockSharedPreferencesService();
@@ -235,15 +225,19 @@ void main() {
       final testMainDio = Dio(BaseOptions(baseUrl: 'http://test.com/api/'));
 
       // Mock refresh
-      testRefreshDio.interceptors.add(InterceptorsWrapper(
-        onRequest: (options, handler) {
-          handler.resolve(Response(
-            requestOptions: options,
-            statusCode: 200,
-            data: {'accessToken': 'new', 'refreshToken': 'new'},
-          ));
-        },
-      ));
+      testRefreshDio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {'accessToken': 'new', 'refreshToken': 'new'},
+              ),
+            );
+          },
+        ),
+      );
 
       // Captura os dados do retry
       String? retryMethod;
@@ -251,19 +245,23 @@ void main() {
       Map<String, dynamic>? retryQuery;
       String? retryAuth;
 
-      testMainDio.interceptors.add(InterceptorsWrapper(
-        onRequest: (options, handler) {
-          retryMethod = options.method;
-          retryData = options.data;
-          retryQuery = options.queryParameters;
-          retryAuth = options.headers['Authorization'] as String?;
-          handler.resolve(Response(
-            requestOptions: options,
-            statusCode: 200,
-            data: {'ok': true},
-          ));
-        },
-      ));
+      testMainDio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            retryMethod = options.method;
+            retryData = options.data;
+            retryQuery = options.queryParameters;
+            retryAuth = options.headers['Authorization'] as String?;
+            handler.resolve(
+              Response(
+                requestOptions: options,
+                statusCode: 200,
+                data: {'ok': true},
+              ),
+            );
+          },
+        ),
+      );
 
       final interceptor = AuthInterceptor(storage, testRefreshDio, testMainDio);
 
@@ -277,10 +275,7 @@ void main() {
 
       final err = DioException(
         requestOptions: requestOptions,
-        response: Response(
-          requestOptions: requestOptions,
-          statusCode: 401,
-        ),
+        response: Response(requestOptions: requestOptions, statusCode: 401),
         type: DioExceptionType.badResponse,
       );
 
